@@ -1,5 +1,5 @@
 import random
-from math import log10, floor, fmod
+from math import log10, floor, fmod, sqrt
 
 gui_available = True
 
@@ -31,13 +31,15 @@ iterations = 1000000
 screen_size = 400
 v_points = []
 convergent_points = []
-temp_convergence = []
+temp_convergence = [0 for i in range(square)]
+convergence_values = [[] for x in range(square)]
+print(str(convergence_values))
 
 step = 1.0 / (dimensions - 1)
 
 for i in range(dimensions):
 	for j in range(dimensions):
-		convergent_points.append((0.5 * i, 0.5 * j))
+		convergent_points.append((0.5 * i, 1.0 - (0.5 * j)))
 
 print(convergent_points)
 
@@ -56,6 +58,7 @@ def get_neighbours(s):
 	return n
 
 if(gui_available):
+	print("GUI available, will show display")
 	pygame.init()
 	window = pygame.display.set_mode((screen_size, screen_size))
 	pygame.display.set_caption("SOFM")
@@ -63,7 +66,10 @@ if(gui_available):
 	def show_points():
 		global u
 		window.fill((255, 255, 255))
-		pygame.draw.circle(window, (255, 0, 0), (int(screen_size * u[0][0]), int(screen_size * u[0][1])), 5)
+		pygame.draw.circle(window, (255, 0, 0), (int(screen_size * u[0][0]), int(screen_size * u[0][1])), 20)
+		pygame.draw.circle(window, (0, 255, 0), (int(screen_size * u[1][0]), int(screen_size * u[1][1])), 20)
+		pygame.draw.circle(window, (0, 0, 255), (int(screen_size * u[7][0]), int(screen_size * u[7][1])), 20)
+		pygame.draw.circle(window, (255, 255, 0), (int(screen_size * u[4][0]), int(screen_size * u[4][1])), 20)
 		for i in range(square):
 			pos = (int(screen_size*u[i][0]), int(screen_size*u[i][1]))
 			for j in get_neighbours(i):
@@ -91,6 +97,11 @@ def get_min_distance(v):
 def update_learning_coefficient(a):
 	return 1 / (1 + log10(a)) 
 
+def calculate_convergence(i):
+	pos = u[i]
+	conv_pos = convergent_points[i]
+	return sqrt(((pos[0] - conv_pos[0])**2) + ((pos[1] - conv_pos[1])**2))
+
 for i in range(iterations):
 	a = update_learning_coefficient(i + 1) # Uses i + 1 as log10 can't take 0 as input, has no affect on output
 	b = 0.5 * a
@@ -108,13 +119,46 @@ for i in range(iterations):
 		u[n][0] = u[n][0] + (b * (v1[0] - u[n][0]))
 		u[n][1] = u[n][1] + (b * (v1[1] - u[n][1]))
 		#print("Neighbour " + str(n) + " updated to " + str(u[n]))
+
+	for x in range(square):
+		temp_convergence[x] += calculate_convergence(x)
+
 	if(i % 100 == 0):
 		if(i != 0):
-			print(str(i / 100))
+			#print(str(i / 100))
+			for j, val in enumerate(convergence_values):
+				#print(val)
+				val.append(temp_convergence[j] / 100)
+				temp_convergence[j] = 0
+			
+			average_convergence = 0
+			for v in convergence_values:
+				total = 0
+				for val in v:
+					total += val
+				total = total / len(v)
+				average_convergence += total
 
-		data.write(str(i / 100) + "\n")
+			average_convergence = average_convergence / square # Get average convergence	
+			data.write(str(average_convergence) + "\n")
+			'''
+			total = 0
+			for v in convergence_values[4]:
+				total += v
+			total = total / len(convergence_values[4])
 
+			data.write(str(total) + "\n")
+			'''
 		if(gui_available):
 			show_points()
 
+for i, val in enumerate(convergence_values):
+	total = 0
+	for j in val:
+		total += j
+
+	total = total / len(val)
+	print("For point " + str(i) + ", convergence value " + str(total))
+
+data.close()
 pygame.quit()
