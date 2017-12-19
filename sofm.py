@@ -102,8 +102,8 @@ def calculate_convergence(i):
 	conv_pos = convergent_points[i]
 	return sqrt(((pos[0] - conv_pos[0])**2) + ((pos[1] - conv_pos[1])**2))
 
-experiments = [7] #[3, 5, 7]
-b_vals = [0.6, 0.7, 0.8, 0.9] #[x / 10 for x in range(10)]
+experiments = [3, 5, 7]
+b_vals = [x / 10 for x in range(10)]
 print(b_vals)
 
 for ex in experiments:
