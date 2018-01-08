@@ -6,3 +6,4 @@ CS331 Coursework
     <br>
   <p>To run, simply type "python3 sofm.py"</p>
   <p>The outputs can be found in the directories the program will create.</p>
+  <p>The seed for the random number generator can be changed on line 26 of the program</p>
